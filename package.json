@@ -1,0 +1,19 @@
+{
+  "name": "parabank-playwright-tests",
+  "version": "1.0.0",
+  "description": "Playwright + TypeScript automation test suite for ParaBank using POM",
+  "private": true,
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:ui": "playwright test --ui",
+    "test:debug": "playwright test --debug",
+    "test:report": "playwright show-report",
+    "codegen": "playwright codegen https://parabank.parasoft.com/parabank/index.htm"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.48.0",
+    "@types/node": "^20.11.0",
+    "typescript": "^5.4.0"
+  }
+}
