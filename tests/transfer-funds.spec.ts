@@ -7,6 +7,7 @@ test.describe('Transfer Funds page', () => {
     await seededOverviewPage.menuTransferFunds.click();
     const transfer = new TransferFundsPage(page);
     await transfer.assertLoaded();
+    await transfer.waitForAccountsDropToPopulate();
 
     const fromOptions = await transfer.fromAccountDropdown.locator('option').count();
     expect(fromOptions).toBeGreaterThan(0);
@@ -18,6 +19,8 @@ test.describe('Transfer Funds page', () => {
   }) => {
     await seededOverviewPage.menuTransferFunds.click();
     const transfer = new TransferFundsPage(page);
+    await transfer.assertLoaded();
+    await transfer.waitForAccountsDropToPopulate();
 
     const fromId = (await transfer.fromAccountDropdown.locator('option').first().getAttribute('value')) ?? '';
     const toId =

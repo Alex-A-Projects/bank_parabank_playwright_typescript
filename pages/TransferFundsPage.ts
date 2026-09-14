@@ -36,6 +36,21 @@ export class TransferFundsPage extends BasePage {
     await expect(this.transferButton).toBeVisible();
   }
 
+  /**
+   * Wait until both account dropdowns have at least one option.
+   * The dropdowns are server-rendered with the user's accounts and can
+   * briefly render empty if the demo data is still initialising.
+   */
+  async waitForAccountsDropToPopulate(): Promise<void> {
+    for (let i = 0; i < 10; i++) {
+      const fromCount = await this.fromAccountDropdown.locator('option').count();
+      const toCount = await this.toAccountDropdown.locator('option').count();
+      if (fromCount > 0 && toCount > 0) return;
+      await this.page.waitForTimeout(500);
+    }
+    throw new Error('Transfer Funds account dropdowns never populated.');
+  }
+
   async transferFunds(opts: { amount: string; fromId: string; toId: string }): Promise<void> {
     await this.amountInput.fill(opts.amount);
     await this.fromAccountDropdown.selectOption(opts.fromId);

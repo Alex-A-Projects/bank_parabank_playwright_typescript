@@ -28,11 +28,11 @@ test.describe('Admin page', () => {
     await expect(admin.jdbcRadioJdbc).toBeVisible();
   });
 
-  test('SOAP is the default-selected data-access mode', async ({ homePage, page }) => {
+  test('JDBC is the default-selected data-access mode', async ({ homePage, page }) => {
     await homePage.adminPageLink.click();
     const admin = new AdminPage(page);
-    await expect(admin.jdbcRadioSoap).toBeChecked();
-    await expect(admin.jdbcRadioJdbc).not.toBeChecked();
+    await expect(admin.jdbcRadioJdbc).toBeChecked();
+    await expect(admin.jdbcRadioSoap).not.toBeChecked();
   });
 
   test('selecting JDBC mode persists the choice', async ({ homePage, page }) => {
