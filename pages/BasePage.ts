@@ -10,7 +10,18 @@ import { Page, Locator } from '@playwright/test';
  *  - Common error-message and panel helpers used by many pages.
  */
 export class BasePage {
+  /** Canonical ParaBank base URL used by every Page Object. */
+  static readonly BASE_URL = 'https://parabank.parasoft.com/parabank';
+
   readonly page: Page;
+
+  /**
+   * The base URL every POM uses for navigation. Defaults to the public
+   * ParaBank demo, but tests can override it for the lifetime of a page
+   * by calling `setBaseUrl(...)` — useful when a spec runs against the
+   * local Docker instance instead of the cloud demo.
+   */
+  private baseUrl: string = BasePage.BASE_URL;
 
   // Global header
   readonly logoLink: Locator;
@@ -53,8 +64,10 @@ export class BasePage {
     this.title = page.locator('#rightPanel h1, .title');
   }
 
-  /** Canonical ParaBank base URL used by every Page Object. */
-  static readonly BASE_URL = 'https://parabank.parasoft.com/parabank';
+  /** Override the base URL for this instance. Affects all `goto()` calls on this POM. */
+  setBaseUrl(url: string): void {
+    this.baseUrl = url;
+  }
 
   /** Wait for the public demo bank's Cloudflare rate limit to lift. */
   static async waitForRateLimit(): Promise<void> {
@@ -92,9 +105,10 @@ export class BasePage {
    */
   async goto(path = ''): Promise<void> {
     const cleaned = path.startsWith('/') ? path.slice(1) : path;
+    const base = this.baseUrl;
     const absolute = new URL(
       cleaned,
-      BasePage.BASE_URL.endsWith('/') ? BasePage.BASE_URL : BasePage.BASE_URL + '/',
+      base.endsWith('/') ? base : base + '/',
     ).toString();
 
     for (let attempt = 0; attempt < BasePage.MAX_NAV_RETRIES; attempt++) {

@@ -75,8 +75,37 @@ export class AccountOverviewPage extends BasePage {
     await expect(this.menuLogOut).toBeVisible();
   }
 
-  /** Get the total balance string as displayed in the footer cell. */
-  async getTotalBalance(): Promise<string> {
-    return ((await this.totalBalanceCell.textContent()) ?? '').trim();
+  /**
+ * Get the total balance string as displayed in the table.
+ * ParaBank renders the "Total" cell inside <tbody> rather than <tfoot>;
+ * we find it by searching for any row whose first cell reads "Total".
+ */
+async getTotalBalance(): Promise<string> {
+    const totalCellText = await this.page
+        .locator('#accountTable tr')
+        .filter({ has: this.page.locator('td', { hasText: /^Total$/ }) })
+        .first()
+        .locator('td')
+        .nth(1)
+        .textContent();
+    return (totalCellText ?? '').trim();
+}
+
+  /**
+   * Parse every account row in the table and return
+   * `{ accountNumber, balance }` pairs in row order.
+   * The `accountTable` columns are: [Account, Balance, Available].
+   */
+  async getAccountRows(): Promise<Array<{ accountNumber: string; balance: string }>> {
+    const rows = await this.accountRows.evaluateAll((trs) =>
+      trs.map((tr) => {
+        const cells = tr.querySelectorAll('td');
+        return {
+          accountNumber: (cells[0]?.textContent ?? '').trim(),
+          balance: (cells[1]?.textContent ?? '').trim(),
+        };
+      }),
+    );
+    return rows;
   }
 }

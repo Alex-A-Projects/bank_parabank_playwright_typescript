@@ -47,6 +47,21 @@ export class RequestLoanPage extends BasePage {
     await this.applyNowButton.click();
   }
 
+  /**
+   * Wait for the funding-source dropdown to be populated. The dropdown is
+   * server-rendered and may render empty briefly; the population only
+   * counts DOM children because `<option>` elements are not "visible"
+   * in the strict Playwright sense while the `<select>` is closed.
+   */
+  async waitForAccountsDropToPopulate(): Promise<void> {
+    for (let i = 0; i < 10; i++) {
+      const count = await this.fromAccountDropdown.locator('option').count();
+      if (count > 0) return;
+      await this.page.waitForTimeout(500);
+    }
+    throw new Error('Request Loan account dropdown never populated.');
+  }
+
   async assertApproved(): Promise<void> {
     await expect(
       this.page

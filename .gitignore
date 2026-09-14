@@ -27,3 +27,11 @@ npm-debug.log*
 
 # Local-only files generated during test authoring
 cookies.txt
+
+# Compiled JDBC helpers - regenerated via `javac`
+utils/db/*.class
+
+# Scratch Java probes used during schema exploration
+/utils/db/ListTables.java
+/utils/db/SampleData.java
+/utils/db/TypeMeaning.java

@@ -100,4 +100,48 @@ export class FindTransactionsPage extends BasePage {
   async assertResultsOrEmpty(): Promise<void> {
     await expect(this.resultsTable.locator('tbody').first()).toBeAttached();
   }
+
+  /** Number of rows currently rendered in the results table body. */
+  async getResultRowCount(): Promise<number> {
+    return await this.page
+        .locator('table#transactionTable tbody#transactionBody tr')
+        .count();
+  }
+
+  /**
+   * Wait until the AJAX-search response has rendered rows, or until
+   * the timeout elapses. ParaBank loads the results via an XHR so a
+   * `click()` returning doesn't mean results are present yet.
+   */
+  async waitForResults(): Promise<void> {
+    await expect(
+        this.page.locator('table#transactionTable tbody#transactionBody tr'),
+    ).toHaveCount(0, { timeout: 500 }).catch(() => undefined);
+    // Either rows appear OR an explicit empty <p> shows.
+    await this.page.waitForLoadState('networkidle', { timeout: 5_000 }).catch(() => undefined);
+  }
+
+  /**
+   * Extract transaction IDs (from the per-row detail links) and the
+   * description text shown in the UI. Used to cross-check against the
+   * rows returned by the HSQLDB queries.
+   */
+  async getResultRows(): Promise<Array<{ id: string; description: string }>> {
+    return await this.page.$$eval(
+        'table#transactionTable tbody#transactionBody tr',
+        (rows) =>
+            rows.map((tr) => {
+                const link = tr.querySelector('a[href*="transaction.htm?id="]');
+                const href = link?.getAttribute('href') ?? '';
+                const id = href.includes('?')
+                    ? new URLSearchParams(href.split('?')[1]).get('id') ?? ''
+                    : '';
+                const cells = tr.querySelectorAll('td');
+                return {
+                    id,
+                    description: (cells[1]?.textContent ?? '').trim(),
+                };
+            }),
+    );
+  }
 }
